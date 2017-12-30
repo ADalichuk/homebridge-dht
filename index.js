@@ -53,8 +53,6 @@ module.exports = function(homebridge) {
 
 function DhtAccessory(log, config) {
   this.log = log;
-  this.log("Adding Accessory");
-  this.config = config;
   this.name = config.name;
   this.name_temperature = config.name_temperature || config.name;
   this.name_humidity = config.name_humidity || config.name;
@@ -70,7 +68,6 @@ function DhtAccessory(log, config) {
   if (this.spreadsheetId) {
     this.logger = new logger(this.spreadsheetId);
   }
-
 
 }
 
@@ -88,9 +85,7 @@ DhtAccessory.prototype = {
         var temperature = parseFloat(result[1]);
         var humidity = parseFloat(result[3]);
 
-        //                this.humidity = humidity;
         this.log("DHT Status: %s, Temperature: %s, Humidity: %s", result[0], temperature, humidity);
-
 
         this.log_event_counter = this.log_event_counter + 1;
         if (this.log_event_counter > 59) {
@@ -151,7 +146,7 @@ DhtAccessory.prototype = {
     informationService
       .setCharacteristic(Characteristic.Manufacturer, "NorthernMan54")
       .setCharacteristic(Characteristic.Model, this.service)
-      .setCharacteristic(Characteristic.SerialNumber, hostname+"-"+hostname);
+      .setCharacteristic(Characteristic.SerialNumber, hostname + "-" + hostname);
 
     switch (this.service) {
 
@@ -193,8 +188,13 @@ DhtAccessory.prototype = {
 
         setInterval(function() {
           this.getDHTTemperature(function(err, temp) {
-            this.dhtService
-              .setCharacteristic(Characteristic.CurrentTemperature, temp);
+            if (err) {
+              this.dhtService
+                .setCharacteristic(Characteristic.CurrentTemperature, err);
+            } else {
+              this.dhtService
+                .setCharacteristic(Characteristic.CurrentTemperature, temp);
+            }
           }.bind(this));
 
         }.bind(this), this.refresh * 1000);
